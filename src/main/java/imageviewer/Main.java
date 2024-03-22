@@ -10,10 +10,13 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.kordamp.ikonli.material2.Material2AL;
 import org.kordamp.ikonli.material2.Material2MZ;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -95,6 +98,8 @@ public class Main extends Application {
         var imagePreviews = new HBox(8);
         imagePreviews.setAlignment(Pos.CENTER);
 
+        List<StackPane> thumbnails = new ArrayList<>();
+
         for (int i = 0; i < slideshow.images().size(); i++) {
             Image img = slideshow.images().get(i);
             ImageView view = new ImageView(img);
@@ -102,12 +107,25 @@ public class Main extends Application {
             view.setFitHeight(150 * 0.67);
             view.setPreserveRatio(true);
 
-            System.out.println(img.getHeight());
-            System.out.println(view.getFitHeight());
-            int tempI = i;
-            view.setOnMouseClicked(e -> slideshow.select(tempI));
-            imagePreviews.getChildren().add(view);
+            var container = new StackPane(view, border());
+            container.setUserData(i);
+            thumbnails.add(container);
+
+            view.setOnMouseClicked(e -> slideshow.select((int) container.getUserData()));
+
+            imagePreviews.getChildren().add(container);
         }
+
+        slideshow.currentImageProperty().addListener((obs, ov, nv) -> {
+            for (StackPane container : thumbnails) {
+                var border = (Rectangle) container.getChildren().get(1); // 1 er border index
+                if (slideshow.images().indexOf(nv) == (int) container.getUserData()) {
+                    border.setVisible(true);
+                } else {
+                    border.setVisible(false);
+                }
+            }
+        });
 
         var scrollPane = new ScrollPane(imagePreviews);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -118,6 +136,15 @@ public class Main extends Application {
         var results = new HBox(scrollPane);
         results.setAlignment(Pos.CENTER);
 
+        return results;
+    }
+
+    private Rectangle border() {
+        var results = new Rectangle(150, 150 * 0.67);
+        results.setStroke(Color.FIREBRICK);
+        results.setFill(Color.TRANSPARENT);
+        results.setStrokeWidth(2);
+        results.setVisible(false);
         return results;
     }
 }

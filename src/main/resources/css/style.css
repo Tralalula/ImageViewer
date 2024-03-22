@@ -2,3 +2,9 @@
     -fx-icon-size: 40;
     -fx-cursor: hand;
 }
+
+.thumbnail-selected {
+    -fx-border-color: blue;
+    -fx-border-width: 2;
+    -fx-padding: 5;
+}
