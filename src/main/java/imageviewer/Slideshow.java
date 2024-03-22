@@ -35,7 +35,7 @@ public class Slideshow {
 
     private KeyFrame endKeyFrame() {
         return new KeyFrame(Duration.seconds(1.0), e -> {
-            next();
+            next(false);
             progress.set(1.0);
         });
     }
@@ -65,16 +65,26 @@ public class Slideshow {
     }
 
     public void next() {
+        next(true);
+    }
+
+    private void next(boolean userInitiated) {
         if (images.size() > 1) {
             currentIndex = (currentIndex + 1) % images.size();
             currentImage.set(images.get(currentIndex));
+            if (userInitiated && isActive.get()) stop();
         }
     }
 
     public void previous() {
+        previous(true);
+    }
+
+    private void previous(boolean userInitiated) {
         if (images.size() > 1) {
             currentIndex = (currentIndex - 1 + images.size()) % images.size();
             currentImage.set(images.get(currentIndex));
+            if (userInitiated && isActive.get()) stop();
         }
     }
 
@@ -87,7 +97,9 @@ public class Slideshow {
 
     public void stop() {
         if (isActive.get()) {
-            timeLine.pause();
+            timeLine.stop();
+            timeLine.jumpTo(Duration.ZERO);
+            progress.set(0.0);
             isActive.set(false);
         }
     }
