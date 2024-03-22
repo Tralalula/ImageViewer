@@ -10,6 +10,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -70,6 +71,10 @@ public class Main extends Application {
     }
 
     public Region bottom() {
+        var progressBar = new ProgressBar();
+        progressBar.setPrefWidth(515);
+        progressBar.progressProperty().bindBidirectional(slideshow.progressProperty());
+
         var playPause = Buttons.toggleableActionIconButton(
                 Material2MZ.PLAY_ARROW,
                 Material2MZ.PAUSE,
@@ -80,11 +85,13 @@ public class Main extends Application {
         var previous = Buttons.actionIconButton(Material2AL.ARROW_LEFT, "icon", e -> slideshow.previous());
         var next = Buttons.actionIconButton(Material2AL.ARROW_RIGHT, "icon", e -> slideshow.next());
 
+        var controls = new HBox(8, previous, playPause, next);
+        controls.setAlignment(Pos.CENTER);
 
-        var results = new HBox(8, previous, playPause, next);
-        results.setAlignment(Pos.CENTER);
+        var progressBarContainer = new HBox(progressBar);
+        progressBarContainer.setAlignment(Pos.CENTER);
 
-        return results;
+        return new VBox(8, progressBarContainer, controls);
     }
 
     public void handlePlay() {
