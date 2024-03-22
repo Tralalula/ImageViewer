@@ -8,6 +8,11 @@ import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
 import javafx.util.Duration;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Slideshow {
@@ -16,9 +21,11 @@ public class Slideshow {
     private final BooleanProperty isActive = new SimpleBooleanProperty();
     private final DoubleProperty progress = new SimpleDoubleProperty();
     private final DoubleProperty duration = new SimpleDoubleProperty(1.0);
+    private final StringProperty currentImageName = new SimpleStringProperty();
 
     private Timeline timeLine;
     private int currentIndex = 0;
+    private List<String> imageNames = new ArrayList<>();
 
     public Slideshow() {
         currentImage.set(null);
@@ -28,6 +35,20 @@ public class Slideshow {
         timeLine = new Timeline(startKeyFrame(), endKeyFrame());
         timeLine.setCycleCount(Timeline.INDEFINITE);
         timeLine.currentTimeProperty().addListener((obs, ov, nv) -> progress.set(nv.toSeconds()));
+
+        currentImage.addListener((obs, ov, nv) -> updateCurrentImageName());
+    }
+
+    private void updateCurrentImageName() {
+        if (currentIndex >= 0 && currentIndex < imageNames.size()) {
+            currentImageName.set(imageNames.get(currentIndex));
+        } else {
+            currentImageName.set("");
+        }
+    }
+
+    public StringProperty currentImageName() {
+        return currentImageName;
     }
 
     private KeyFrame startKeyFrame() {
@@ -43,6 +64,7 @@ public class Slideshow {
 
     public void load(List<String> imagePaths) {
         images.clear();
+        toImageNames(imagePaths);
 
         for (String path : imagePaths) {
             images.add(new Image(path, true));
@@ -50,6 +72,16 @@ public class Slideshow {
 
         if (!images.isEmpty()) {
             currentImage.set(images.getFirst());
+        }
+    }
+
+    private void toImageNames(List<String> imagePaths) {
+        imageNames.clear();
+        for (String fullPath : imagePaths) {
+            var path = fullPath.replaceFirst("^file:/", "");
+            path = path.replaceFirst("^/", "").replace("/", "\\");
+            var fileName = new File(path).getName();
+            imageNames.add(fileName);
         }
     }
 

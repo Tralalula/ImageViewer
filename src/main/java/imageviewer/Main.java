@@ -2,11 +2,14 @@ package imageviewer;
 
 import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -28,6 +31,7 @@ import java.util.Objects;
 public class Main extends Application {
     public static final String PATH = "/images/";
 
+    private StringProperty currentImageName = new SimpleStringProperty();
     private Slideshow slideshow;
     private Stage stage;
     private HBox imagePreviews;
@@ -46,6 +50,7 @@ public class Main extends Application {
 
         results.setLeft(left());
         results.setCenter(center());
+        results.setRight(right());
         results.setBottom(bottom());
 
         stage.setScene(new Scene(results, 1200, 960));
@@ -103,6 +108,18 @@ public class Main extends Application {
 
         results.getChildren().addAll(imageView, controls());
         results.setAlignment(Pos.CENTER);
+
+        return results;
+    }
+
+    public Region right() {
+        var imageName = new Label("");
+        imageName.textProperty().bind(slideshow.currentImageName());
+        imageName.setMinWidth(200);
+        imageName.setMaxWidth(200);
+
+        var results = new VBox(8);
+        results.getChildren().addAll(imageName);
 
         return results;
     }
