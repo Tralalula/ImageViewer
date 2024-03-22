@@ -4,6 +4,7 @@ import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
@@ -155,11 +156,9 @@ public class Main extends Application {
 
     private void setupThumbnails() {
         imagePreviews.getChildren().clear();
-        List<StackPane> thumbnails = new ArrayList<>();
-
         for (int i = 0; i < slideshow.images().size(); i++) {
-            Image img = slideshow.images().get(i);
-            ImageView view = new ImageView(img);
+            var img = slideshow.images().get(i);
+            var view = new ImageView(img);
             view.setFitWidth(150);
             view.setFitHeight(150 * 0.67);
             view.setPreserveRatio(true);
@@ -169,21 +168,22 @@ public class Main extends Application {
 
             container.setOnMouseClicked(e -> {
                 slideshow.select((int) container.getUserData());
-                refreshSelectionIndicator(thumbnails);
             });
 
-            thumbnails.add(container);
             imagePreviews.getChildren().add(container);
         }
 
-        refreshSelectionIndicator(thumbnails);
+        refreshSelectionIndicator();
+        slideshow.currentImageProperty().addListener((obs, ov, nv) -> refreshSelectionIndicator());
     }
 
-    private void refreshSelectionIndicator(List<StackPane> thumbnails) {
-        Image currentImage = slideshow.currentImageProperty().get();
-        for (StackPane container : thumbnails) {
-            var border = (Rectangle) container.getChildren().get(1);
-            border.setVisible(slideshow.images().indexOf(currentImage) == (int) container.getUserData());
+    private void refreshSelectionIndicator() {
+        for (Node node : imagePreviews.getChildren()) {
+            var container = (StackPane) node;
+            var border = (Rectangle) container.getChildren().get(1); // index på border
+            int index = (int) container.getUserData();
+
+            border.setVisible(slideshow.images().indexOf(slideshow.currentImageProperty().get()) == index);
         }
     }
 
