@@ -1,28 +1,16 @@
 package imageviewer;
 
 import atlantafx.base.theme.PrimerLight;
-import atlantafx.base.theme.Styles;
 import javafx.application.Application;
-import javafx.beans.property.BooleanProperty;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import org.kordamp.ikonli.Ikon;
-import org.kordamp.ikonli.fontawesome5.FontAwesomeRegular;
-import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
-import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.material2.Material2AL;
 import org.kordamp.ikonli.material2.Material2MZ;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
 
@@ -43,14 +31,13 @@ public class Main extends Application {
         results.getStylesheets().add(Objects.requireNonNull(this.getClass().getResource("/css/style.css")).toExternalForm());
 
         results.setCenter(center());
-        results.setBottom(bottom());
 
         stage.setScene(new Scene(results, 1200, 960));
         stage.show();
     }
 
     public Region center() {
-        var results = new StackPane();
+        var results = new VBox(8);
 
         var paths = List.of(
                 PATH + "01.png", PATH + "02.png", PATH + "03.png", PATH + "04.png",
@@ -65,12 +52,13 @@ public class Main extends Application {
         imageView.setFitHeight(343);
         imageView.imageProperty().bindBidirectional(slideshow.currentImageProperty());
 
-        results.getChildren().add(imageView);
+        results.getChildren().addAll(imageView, controls());
+        results.setAlignment(Pos.CENTER);
 
         return results;
     }
 
-    public Region bottom() {
+    public Region controls() {
         var progressBar = new ProgressBar();
         progressBar.setPrefWidth(515);
         progressBar.progressProperty().bindBidirectional(slideshow.progressProperty());
