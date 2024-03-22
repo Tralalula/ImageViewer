@@ -52,6 +52,7 @@ public class Main extends Application {
         );
 
         slideshow = new Slideshow();
+        slideshow.setDuration(1.0);
         slideshow.load(paths);
 
         var imageView = new ImageView();

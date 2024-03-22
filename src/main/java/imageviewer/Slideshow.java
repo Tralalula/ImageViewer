@@ -15,8 +15,9 @@ public class Slideshow {
     private final ObjectProperty<Image> currentImage = new SimpleObjectProperty<>();
     private final BooleanProperty isActive = new SimpleBooleanProperty();
     private final DoubleProperty progress = new SimpleDoubleProperty();
-    private final Timeline timeLine;
+    private final DoubleProperty duration = new SimpleDoubleProperty(1.0);
 
+    private Timeline timeLine;
     private int currentIndex = 0;
 
     public Slideshow() {
@@ -34,7 +35,7 @@ public class Slideshow {
     }
 
     private KeyFrame endKeyFrame() {
-        return new KeyFrame(Duration.seconds(1.0), e -> {
+        return new KeyFrame(Duration.seconds(duration.get()), e -> {
             next(false);
             progress.set(1.0);
         });
@@ -90,6 +91,12 @@ public class Slideshow {
 
     public void start() {
         if (!isActive.get() && !images.isEmpty()) {
+            timeLine = new Timeline(startKeyFrame(), endKeyFrame());
+            timeLine.setCycleCount(Timeline.INDEFINITE);
+            timeLine.currentTimeProperty().addListener((obs, ov, nv) -> {
+                progress.set(nv.toSeconds() / duration.get());
+            });
+
             timeLine.play();
             isActive.set(true);
         }
@@ -114,5 +121,9 @@ public class Slideshow {
 
     public ObservableList<Image> images() {
         return FXCollections.unmodifiableObservableList(images);
+    }
+
+    public void setDuration(double newDuration) {
+        duration.set(newDuration);
     }
 }
