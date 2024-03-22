@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -12,10 +13,13 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.kordamp.ikonli.material2.Material2AL;
 import org.kordamp.ikonli.material2.Material2MZ;
 
+import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,23 +28,59 @@ public class Main extends Application {
     public static final String PATH = "/images/";
 
     private Slideshow slideshow;
+    private Stage stage;
+    private HBox imagePreviews;
 
     public static void main(String[] args) {
         Application.launch();
     }
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage primaryStage) {
+        this.stage = primaryStage;
         Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
 
         var results = new BorderPane();
         results.getStylesheets().add(Objects.requireNonNull(this.getClass().getResource("/css/style.css")).toExternalForm());
 
+        results.setLeft(left());
         results.setCenter(center());
         results.setBottom(bottom());
 
         stage.setScene(new Scene(results, 1200, 960));
         stage.show();
+    }
+
+    public Region left() {
+        var results = new VBox(8);
+
+        var chooseImages = new Button("Choose...");
+        chooseImages.setOnAction(e -> chooseImages());
+        results.getChildren().add(chooseImages);
+
+        return results;
+    }
+
+    private void chooseImages() {
+        var chooser = new FileChooser();
+
+        FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Image files", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp");
+        chooser.getExtensionFilters().add(filter);
+
+        var files = chooser.showOpenMultipleDialog(stage);
+
+        if (files != null) {
+            var paths = files.stream().map(File::toURI).map(URI::toString).toList();
+            slideshow.load(paths);
+            refreshImageView();
+            setupThumbnails();
+        }
+    }
+
+    private void refreshImageView() {
+        if (!slideshow.images().isEmpty()) {
+            slideshow.select(0);
+        }
     }
 
     public Region center() {
@@ -96,37 +136,10 @@ public class Main extends Application {
     }
 
     public Region bottom() {
-        var imagePreviews = new HBox(8);
+        imagePreviews = new HBox(8);
         imagePreviews.setAlignment(Pos.CENTER);
 
-        List<StackPane> thumbnails = new ArrayList<>();
-
-        for (int i = 0; i < slideshow.images().size(); i++) {
-            Image img = slideshow.images().get(i);
-            ImageView view = new ImageView(img);
-            view.setFitWidth(150);
-            view.setFitHeight(150 * 0.67);
-            view.setPreserveRatio(true);
-
-            var container = new StackPane(view, border());
-            container.setUserData(i);
-            thumbnails.add(container);
-
-            view.setOnMouseClicked(e -> slideshow.select((int) container.getUserData()));
-
-            imagePreviews.getChildren().add(container);
-        }
-
-        slideshow.currentImageProperty().addListener((obs, ov, nv) -> {
-            for (StackPane container : thumbnails) {
-                var border = (Rectangle) container.getChildren().get(1); // 1 er border index
-                if (slideshow.images().indexOf(nv) == (int) container.getUserData()) {
-                    border.setVisible(true);
-                } else {
-                    border.setVisible(false);
-                }
-            }
-        });
+        setupThumbnails();
 
         var scrollPane = new ScrollPane(imagePreviews);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -138,6 +151,40 @@ public class Main extends Application {
         results.setAlignment(Pos.CENTER);
 
         return results;
+    }
+
+    private void setupThumbnails() {
+        imagePreviews.getChildren().clear();
+        List<StackPane> thumbnails = new ArrayList<>();
+
+        for (int i = 0; i < slideshow.images().size(); i++) {
+            Image img = slideshow.images().get(i);
+            ImageView view = new ImageView(img);
+            view.setFitWidth(150);
+            view.setFitHeight(150 * 0.67);
+            view.setPreserveRatio(true);
+
+            var container = new StackPane(view, border());
+            container.setUserData(i);
+
+            container.setOnMouseClicked(e -> {
+                slideshow.select((int) container.getUserData());
+                refreshSelectionIndicator(thumbnails);
+            });
+
+            thumbnails.add(container);
+            imagePreviews.getChildren().add(container);
+        }
+
+        refreshSelectionIndicator(thumbnails);
+    }
+
+    private void refreshSelectionIndicator(List<StackPane> thumbnails) {
+        Image currentImage = slideshow.currentImageProperty().get();
+        for (StackPane container : thumbnails) {
+            var border = (Rectangle) container.getChildren().get(1);
+            border.setVisible(slideshow.images().indexOf(currentImage) == (int) container.getUserData());
+        }
     }
 
     private Rectangle border() {
