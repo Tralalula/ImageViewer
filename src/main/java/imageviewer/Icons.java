@@ -1,5 +1,6 @@
 package imageviewer;
 
+import javafx.scene.paint.Color;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.javafx.FontIcon;
 

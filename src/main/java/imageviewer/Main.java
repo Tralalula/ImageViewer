@@ -6,11 +6,13 @@ import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeRegular;
@@ -21,6 +23,7 @@ import org.kordamp.ikonli.material2.Material2MZ;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Objects;
 
 public class Main extends Application {
     public static final String PATH = "/images/";
@@ -36,6 +39,8 @@ public class Main extends Application {
         Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
 
         var results = new BorderPane();
+        results.getStylesheets().add(Objects.requireNonNull(this.getClass().getResource("/css/style.css")).toExternalForm());
+
         results.setCenter(center());
         results.setBottom(bottom());
 
@@ -68,12 +73,18 @@ public class Main extends Application {
         var playPause = Buttons.toggleableActionIconButton(
                 Material2MZ.PLAY_ARROW,
                 Material2MZ.PAUSE,
-                Styles.ACCENT,
+                "icon",
                 slideshow.isActiveProperty(), e -> handlePlay()
         );
-        playPause.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-border: none; -fx-font-size: 30;");
 
-        return new HBox(playPause);
+        var previous = Buttons.actionIconButton(Material2AL.ARROW_LEFT, "icon", e -> slideshow.previous());
+        var next = Buttons.actionIconButton(Material2AL.ARROW_RIGHT, "icon", e -> slideshow.next());
+
+
+        var results = new HBox(8, previous, playPause, next);
+        results.setAlignment(Pos.CENTER);
+
+        return results;
     }
 
     public void handlePlay() {

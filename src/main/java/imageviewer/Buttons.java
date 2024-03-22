@@ -33,10 +33,10 @@ public class Buttons {
         ToggleableIcon toggleableIcon = new ToggleableIcon(iconCode1, iconCode2, style, toggleProperty);
 
         results.setGraphic(toggleableIcon);
+        results.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-border: none;");
         results.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         results.setFocusTraversable(false);
         results.setOnAction(actionEventHandler);
-        results.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-border: none;");
 
         return results;
     }
