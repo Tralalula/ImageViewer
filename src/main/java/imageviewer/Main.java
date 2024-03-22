@@ -2,9 +2,12 @@ package imageviewer;
 
 import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -31,6 +34,7 @@ public class Main extends Application {
         results.getStylesheets().add(Objects.requireNonNull(this.getClass().getResource("/css/style.css")).toExternalForm());
 
         results.setCenter(center());
+        results.setBottom(bottom());
 
         stage.setScene(new Scene(results, 1200, 960));
         stage.show();
@@ -85,5 +89,35 @@ public class Main extends Application {
     public void handlePlay() {
         if (slideshow.isActiveProperty().get()) slideshow.stop();
         else slideshow.start();
+    }
+
+    public Region bottom() {
+        var imagePreviews = new HBox(8);
+        imagePreviews.setAlignment(Pos.CENTER);
+
+        for (int i = 0; i < slideshow.images().size(); i++) {
+            Image img = slideshow.images().get(i);
+            ImageView view = new ImageView(img);
+            view.setFitWidth(150);
+            view.setFitHeight(150 * 0.67);
+            view.setPreserveRatio(true);
+
+            System.out.println(img.getHeight());
+            System.out.println(view.getFitHeight());
+            int tempI = i;
+            view.setOnMouseClicked(e -> slideshow.select(tempI));
+            imagePreviews.getChildren().add(view);
+        }
+
+        var scrollPane = new ScrollPane(imagePreviews);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setMinHeight((150 * 0.67) + 8);
+        scrollPane.setFitToHeight(true);
+
+        var results = new HBox(scrollPane);
+        results.setAlignment(Pos.CENTER);
+
+        return results;
     }
 }

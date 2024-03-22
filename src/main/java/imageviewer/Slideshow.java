@@ -103,4 +103,16 @@ public class Slideshow {
             isActive.set(false);
         }
     }
+
+    public void select(int index) {
+        if (index >= 0 && index < images.size()) {
+            currentIndex = index;
+            currentImage.set(images.get(currentIndex));
+            stop();
+        }
+    }
+
+    public ObservableList<Image> images() {
+        return FXCollections.unmodifiableObservableList(images);
+    }
 }
