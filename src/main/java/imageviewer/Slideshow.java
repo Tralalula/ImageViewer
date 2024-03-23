@@ -2,15 +2,19 @@ package imageviewer;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.util.Duration;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 public class Slideshow {
     private final ObservableList<Image> images = FXCollections.observableArrayList();
@@ -19,6 +23,11 @@ public class Slideshow {
     private final DoubleProperty progress = new SimpleDoubleProperty();
     private final DoubleProperty duration = new SimpleDoubleProperty(1.0);
     private final StringProperty currentImageName = new SimpleStringProperty();
+    private final IntegerProperty pixels = new SimpleIntegerProperty();
+    private final IntegerProperty redPixels = new SimpleIntegerProperty();
+    private final IntegerProperty greenPixels = new SimpleIntegerProperty();
+    private final IntegerProperty bluePixels = new SimpleIntegerProperty();
+    private final IntegerProperty mixedPixels = new SimpleIntegerProperty();
 
     private Timeline timeLine;
     private int currentIndex = 0;
@@ -33,7 +42,10 @@ public class Slideshow {
         timeLine.setCycleCount(Timeline.INDEFINITE);
         timeLine.currentTimeProperty().addListener((obs, ov, nv) -> progress.set(nv.toSeconds()));
 
-        currentImage.addListener((obs, ov, nv) -> updateCurrentImageName());
+        currentImage.addListener((obs, ov, nv) -> {
+            updateCurrentImageName();
+            performBackgroundTask(this::readPixels, this::setPixels);
+        });
     }
 
     private void updateCurrentImageName() {
@@ -46,6 +58,26 @@ public class Slideshow {
 
     public StringProperty currentImageName() {
         return currentImageName;
+    }
+
+    public IntegerProperty pixelsProperty() {
+        return pixels;
+    }
+
+    public IntegerProperty redPixelsProperty() {
+        return redPixels;
+    }
+
+    public IntegerProperty greenPixelsProperty() {
+        return greenPixels;
+    }
+
+    public IntegerProperty bluePixelsProperty() {
+        return bluePixels;
+    }
+
+    public IntegerProperty mixedPixelsProperty() {
+        return mixedPixels;
     }
 
     private KeyFrame startKeyFrame() {
@@ -68,7 +100,14 @@ public class Slideshow {
         }
 
         if (!images.isEmpty()) {
-            currentImage.set(images.getFirst());
+            var first = images.getFirst();
+            currentImage.set(first);
+
+            first.progressProperty().addListener((obs, ov, nv) -> {
+                if (nv.doubleValue() == 1.0) { // 100% loaded fra bg tråd
+                    performBackgroundTask(this::readPixels, this::setPixels);
+                }
+            });
         }
     }
 
@@ -156,7 +195,7 @@ public class Slideshow {
         duration.set(newDuration);
     }
 
-    public ImageData imageData() {
+    private ImageData readPixels() {
         var currentImg = currentImage.get();
         if (currentImg == null) return new ImageData(0, 0, 0, 0, 0);
 
@@ -190,5 +229,33 @@ public class Slideshow {
         }
 
         return new ImageData(pixels, redPixels, greenPixels, bluePixels, mixedPixels);
+    }
+
+
+    private void setPixels(ImageData imageData) {
+        this.pixels.set(imageData.pixels());
+        this.redPixels.set(imageData.redPixels());
+        this.greenPixels.set(imageData.greenPixels());
+        this.bluePixels.set(imageData.bluePixels());
+        this.mixedPixels.set(imageData.bluePixels());
+    }
+
+    private <T> void performBackgroundTask(Callable<T> task, Consumer<T> onSuccess) {
+        // Hent data i baggrunden så vi ikke bloker Java FX Application Thread (FXAT), hvis forbindelsen f.eks. er langsom
+        Task<T> backgroundTask = new Task<T>() {
+            @Override
+            protected T call() throws Exception {
+                return task.call();
+            }
+        };
+
+        // Håndter successful hentning af data
+        backgroundTask.setOnSucceeded(event -> {
+            T result = backgroundTask.getValue();
+            onSuccess.accept(result);
+        });
+
+        // Start ny tråd
+        new Thread(backgroundTask).start();
     }
 }

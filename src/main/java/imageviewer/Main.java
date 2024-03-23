@@ -116,8 +116,23 @@ public class Main extends Application {
         imageName.setMinWidth(200);
         imageName.setMaxWidth(200);
 
+        var pixels = new Label("");
+        pixels.textProperty().bind(slideshow.pixelsProperty().asString());
+
+        var redPixels = new Label("");
+        redPixels.textProperty().bind(slideshow.redPixelsProperty().asString());
+
+        var greenPixels = new Label("");
+        greenPixels.textProperty().bind(slideshow.greenPixelsProperty().asString());
+
+        var bluePixels = new Label("");
+        bluePixels.textProperty().bind(slideshow.bluePixelsProperty().asString());
+
+        var mixedPixels = new Label("");
+        mixedPixels.textProperty().bind(slideshow.mixedPixelsProperty().asString());
+
         var results = new VBox(8);
-        results.getChildren().addAll(imageName);
+        results.getChildren().addAll(imageName, pixels, redPixels, greenPixels, bluePixels, mixedPixels);
 
         return results;
     }
@@ -181,10 +196,7 @@ public class Main extends Application {
             var container = new StackPane(view, border());
             container.setUserData(i);
 
-            container.setOnMouseClicked(e -> {
-                slideshow.select((int) container.getUserData());
-                System.out.println(slideshow.imageData());
-            });
+            container.setOnMouseClicked(e -> slideshow.select((int) container.getUserData()));
 
             imagePreviews.getChildren().add(container);
         }
