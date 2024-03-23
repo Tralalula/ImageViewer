@@ -104,7 +104,7 @@ public class Slideshow {
             currentImage.set(first);
 
             first.progressProperty().addListener((obs, ov, nv) -> {
-                if (nv.doubleValue() == 1.0) { // 100% loaded fra bg tråd
+                if (nv.doubleValue() == 1.0) { // 100% loaded from bg thread
                     performBackgroundTask(this::readPixels, this::setPixels);
                 }
             });
@@ -241,7 +241,6 @@ public class Slideshow {
     }
 
     private <T> void performBackgroundTask(Callable<T> task, Consumer<T> onSuccess) {
-        // Hent data i baggrunden så vi ikke bloker Java FX Application Thread (FXAT), hvis forbindelsen f.eks. er langsom
         Task<T> backgroundTask = new Task<T>() {
             @Override
             protected T call() throws Exception {
@@ -249,13 +248,11 @@ public class Slideshow {
             }
         };
 
-        // Håndter successful hentning af data
         backgroundTask.setOnSucceeded(event -> {
             T result = backgroundTask.getValue();
             onSuccess.accept(result);
         });
 
-        // Start ny tråd
         new Thread(backgroundTask).start();
     }
 }

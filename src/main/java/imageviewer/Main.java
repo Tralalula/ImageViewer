@@ -2,6 +2,8 @@ package imageviewer;
 
 import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
@@ -116,25 +118,32 @@ public class Main extends Application {
         imageName.setMinWidth(200);
         imageName.setMaxWidth(200);
 
+
         var pixels = new Label("");
-        pixels.textProperty().bind(slideshow.pixelsProperty().asString());
+        pixels.textProperty().bind(Bindings.createStringBinding(
+                () -> slideshow.pixelsProperty().get() + " pixels total:",
+                slideshow.pixelsProperty())
+        );
 
-        var redPixels = new Label("");
-        redPixels.textProperty().bind(slideshow.redPixelsProperty().asString());
-
-        var greenPixels = new Label("");
-        greenPixels.textProperty().bind(slideshow.greenPixelsProperty().asString());
-
-        var bluePixels = new Label("");
-        bluePixels.textProperty().bind(slideshow.bluePixelsProperty().asString());
-
-        var mixedPixels = new Label("");
-        mixedPixels.textProperty().bind(slideshow.mixedPixelsProperty().asString());
+        var redPixels = pixelLabel("red", slideshow.redPixelsProperty(), slideshow.pixelsProperty());
+        var greenPixels = pixelLabel("green", slideshow.greenPixelsProperty(), slideshow.pixelsProperty());
+        var bluePixels = pixelLabel("blue", slideshow.bluePixelsProperty(), slideshow.pixelsProperty());
+        var mixedPixels = pixelLabel("mixed", slideshow.mixedPixelsProperty(), slideshow.pixelsProperty());
 
         var results = new VBox(8);
         results.getChildren().addAll(imageName, pixels, redPixels, greenPixels, bluePixels, mixedPixels);
 
         return results;
+    }
+
+    private Label pixelLabel(String colorName, IntegerProperty colorPixels, IntegerProperty totalPixels) {
+        var label = new Label();
+        label.textProperty().bind(Bindings.createStringBinding(() -> {
+            var total = totalPixels.get();
+            var color = colorPixels.get();
+            return String.format("%d %s (%.1f%%)", color, colorName, total > 0 ? 100.0 * color / total : 0);
+        }, colorPixels, totalPixels));
+        return label;
     }
 
     public Region controls() {
