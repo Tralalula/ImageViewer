@@ -4,7 +4,6 @@ import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -12,7 +11,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -24,7 +22,6 @@ import org.kordamp.ikonli.material2.Material2MZ;
 
 import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -106,6 +103,7 @@ public class Main extends Application {
         imageView.setFitHeight(343);
         imageView.imageProperty().bindBidirectional(slideshow.currentImageProperty());
 
+
         results.getChildren().addAll(imageView, controls());
         results.setAlignment(Pos.CENTER);
 
@@ -185,6 +183,7 @@ public class Main extends Application {
 
             container.setOnMouseClicked(e -> {
                 slideshow.select((int) container.getUserData());
+                System.out.println(slideshow.imageData());
             });
 
             imagePreviews.getChildren().add(container);

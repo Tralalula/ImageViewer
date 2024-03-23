@@ -9,9 +9,6 @@ import javafx.scene.image.Image;
 import javafx.util.Duration;
 
 import java.io.File;
-import java.net.URISyntaxException;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -157,5 +154,41 @@ public class Slideshow {
 
     public void setDuration(double newDuration) {
         duration.set(newDuration);
+    }
+
+    public ImageData imageData() {
+        var currentImg = currentImage.get();
+        if (currentImg == null) return new ImageData(0, 0, 0, 0, 0);
+
+        var reader = currentImg.getPixelReader();
+        if (reader == null) return new ImageData(0, 0, 0, 0, 0);
+
+        var width = (int) currentImg.getWidth();
+        var height = (int) currentImg.getHeight();
+        var pixels = width * height;
+        int redPixels = 0, greenPixels = 0, bluePixels = 0, mixedPixels = 0;
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                var color = reader.getColor(x, y);
+                var red = color.getRed();
+                var green = color.getGreen();
+                var blue = color.getBlue();
+
+                var maxComponent = Math.max(Math.max(red, green), blue);
+
+                if (maxComponent == red && red > green && red > blue) {
+                    redPixels++;
+                } else if (maxComponent == green && green > red && green > blue) {
+                    greenPixels++;
+                } else if (maxComponent == blue && blue > red && blue > green) {
+                    bluePixels++;
+                } else {
+                    mixedPixels++;
+                }
+            }
+        }
+
+        return new ImageData(pixels, redPixels, greenPixels, bluePixels, mixedPixels);
     }
 }
