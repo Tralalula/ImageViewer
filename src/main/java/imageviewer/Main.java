@@ -4,8 +4,6 @@ import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -30,7 +28,6 @@ import java.util.Objects;
 public class Main extends Application {
     public static final String PATH = "/images/";
 
-    private StringProperty currentImageName = new SimpleStringProperty();
     private Slideshow slideshow;
     private Stage stage;
     private HBox imagePreviews;
